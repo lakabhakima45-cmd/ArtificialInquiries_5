@@ -33,8 +33,9 @@ Remplacer les pages papier par une application web qui permet de :
 
 | Besoin | Solution |
 |---|---|
-| Stockage des données | **Omeka S** en local (Apache + PHP + MySQL) |
-| Modèle de données | Diagramme de classes (`diagram_class.md`) traduit en **modèles de ressources** Omeka S (Dublin Core, FOAF, schema.org) |
+| Stockage des données | **Omeka S** en local (Apache + PHP + MySQL avec XAMPP) |
+| Vocabulaire | Vocabulaire **artinq** (`artificial_inquiries.ttl`) : 8 classes et 22 propriétés, espace de noms `https://humanum-p8.fr/omk_artificialinquiries/onto/artinq#` |
+| Modèle de données | Diagramme de classes (`diagram_class.md`) traduit en **8 modèles de ressources** Omeka S (`resource-template/`) |
 | Communication avec Omeka S | **API REST** d'Omeka S via la bibliothèque JavaScript **omk** |
 | Interface de saisie | **HTML / CSS / JavaScript** |
 | Visualisation du lexique | **D3.js** |
@@ -43,14 +44,41 @@ Remplacer les pages papier par une application web qui permet de :
 
 ## 4. Étapes de réalisation
 
-1. Installer Omeka S en local et vérifier l'accès à l'API.
-2. Créer les modèles de ressources correspondant aux classes du diagramme.
-3. Tester la bibliothèque omk : lire et créer un item depuis une page HTML.
-4. Développer le formulaire de saisie Ex5a.
-5. Développer la page de réflexion Ex5b.
-6. Ajouter la visualisation du lexique.
+1. ✅ Installer Omeka S en local et vérifier l'accès à l'API.
+2. ✅ Tester la bibliothèque omk : lire et créer un item depuis une page HTML.
+3. ✅ Créer le vocabulaire **artinq** et l'importer dans Omeka S.
+4. ✅ Créer les modèles de ressources correspondant aux classes du diagramme.
+5. ✅ Créer des items de test (exemple du vademecum « Birthday celebration dish ideas ») et exporter la base (`omk.sql`).
+6. ⏳ Développer le formulaire de saisie Ex5a.
+7. ⏳ Développer la page de réflexion Ex5b.
+8. ⏳ Ajouter la visualisation du lexique.
 
 ## 5. Fichiers du dépôt
 
-- `README.md` : ce document
-- `diagram_class.md` : diagramme de classes Mermaid
+| Fichier / dossier | Contenu |
+|---|---|
+| `README.md` | Ce document |
+| `diagram_class.md` | Diagramme de classes Mermaid (aligné sur le vocabulaire artinq) |
+| `artificial_inquiries.ttl` | Vocabulaire **artinq** (8 classes, 22 propriétés) |
+| `resource-template/` | Les 8 modèles de ressources Omeka S (un fichier JSON par classe) |
+| `test-items/` | Page HTML qui crée les items de test dans Omeka S avec la bibliothèque **omk** |
+| `omk.sql` | Export de la base de données Omeka S locale (vocabulaire, modèles et items de test) |
+
+## 6. Utilisation de l'IA
+
+Ce travail a été réalisé avec l'aide d'une IA générative : **Claude** (Anthropic), modèle **Claude Opus 5.5**, utilisé dans l'application Claude.
+
+**Ce que l'IA a fait :**
+- m'a guidée pas à pas pour installer XAMPP et Omeka S, et pour tester omk ;
+- a proposé une première version du README et du diagramme de classes ;
+- a généré le vocabulaire `artificial_inquiries.ttl` à partir de l'exemple `jdc.ttl` du cours ;
+- a généré les 8 modèles de ressources (JSON) et la page `test-items` ;
+- m'a aidée à reformuler et à expliquer l'exercice.
+
+**Ce que j'ai fait moi-même :**
+- le choix de l'exercice et du thème, la lecture du protocole et les annotations Zotero ;
+- l'installation et la configuration d'Omeka S en local ;
+- l'import du vocabulaire et des modèles de ressources, la création des items de test, l'export de la base ;
+- la vérification des résultats et la mise en ligne sur GitHub.
+
+Tous les contenus proposés par l'IA ont été relus et testés dans mon Omeka S local avant d'être publiés.
