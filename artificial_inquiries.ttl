@@ -1,0 +1,195 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix vs: <http://www.w3.org/2003/06/sw-vocab-status/ns#> .
+@prefix o: <http://omeka.org/s/vocabs/o#> .
+@prefix artinq: <https://humanum-p8.fr/omk_artificialinquiries/onto/artinq#> .
+
+<https://humanum-p8.fr/omk_artificialinquiries/onto/artinq#> a owl:Ontology ;
+    dcterms:title "Artificial Inquiries" .
+
+# ---------- Classes ----------
+
+artinq:Participant a rdfs:Class ;
+    rdfs:label "Participant" ;
+    rdfs:comment "Personne qui réalise l'exercice." ;
+    rdfs:domain o:Resource ;
+    vs:term_status "experimental" .
+
+artinq:LLM a rdfs:Class ;
+    rdfs:label "LLM" ;
+    rdfs:comment "Modèle de langage utilisé dans une conversation (ChatGPT, Claude, Mistral...)." ;
+    rdfs:domain o:Resource ;
+    vs:term_status "experimental" .
+
+artinq:Conversation a rdfs:Class ;
+    rdfs:label "Conversation" ;
+    rdfs:comment "Conversation passée entre un participant et un LLM." ;
+    rdfs:domain o:Resource ;
+    vs:term_status "experimental" .
+
+artinq:Interaction a rdfs:Class ;
+    rdfs:label "Interaction" ;
+    rdfs:comment "Échange précis : un message de l'utilisateur et la réponse du LLM (Ex5a)." ;
+    rdfs:domain o:Resource ;
+    vs:term_status "experimental" .
+
+artinq:Substitution a rdfs:Class ;
+    rdfs:label "Substitution" ;
+    rdfs:comment "Un tour de soustraction : nouveaux rôles attribués à l'utilisateur et au LLM (Ex5a)." ;
+    rdfs:domain o:Resource ;
+    vs:term_status "experimental" .
+
+artinq:Terme a rdfs:Class ;
+    rdfs:label "Terme" ;
+    rdfs:comment "Mot de remplacement utilisé pour désigner un interlocuteur (ex. un traiteur)." ;
+    rdfs:domain o:Resource ;
+    vs:term_status "experimental" .
+
+artinq:EvaluationTerme a rdfs:Class ;
+    rdfs:label "Évaluation d'un terme" ;
+    rdfs:comment "Jugement porté sur un terme final du lexique (Ex5b)." ;
+    rdfs:domain o:Resource ;
+    vs:term_status "experimental" .
+
+artinq:Reflexion a rdfs:Class ;
+    rdfs:label "Réflexion" ;
+    rdfs:comment "Texte de réflexion sur le lexique final (Ex5b)." ;
+    rdfs:domain o:Resource ;
+    vs:term_status "experimental" .
+
+# ---------- Propriétés ----------
+
+artinq:compteGithub a rdf:Property ;
+    rdfs:label "a comme compte GitHub" ;
+    rdfs:comment "Identifiant GitHub du participant." ;
+    rdfs:domain o:Resource ;
+    vs:term_status "experimental" .
+
+artinq:version a rdf:Property ;
+    rdfs:label "a comme version" ;
+    rdfs:comment "Version du LLM." ;
+    rdfs:domain o:Resource ;
+    vs:term_status "experimental" .
+
+artinq:aParticipant a rdf:Property ;
+    rdfs:label "a comme participant" ;
+    rdfs:comment "Participant qui a mené la conversation ou écrit la réflexion." ;
+    rdfs:domain o:Resource ;
+    vs:term_status "experimental" .
+
+artinq:avecLLM a rdf:Property ;
+    rdfs:label "avec le LLM" ;
+    rdfs:comment "LLM utilisé dans la conversation." ;
+    rdfs:domain o:Resource ;
+    vs:term_status "experimental" .
+
+artinq:dansConversation a rdf:Property ;
+    rdfs:label "dans la conversation" ;
+    rdfs:comment "Conversation d'où provient l'interaction." ;
+    rdfs:domain o:Resource ;
+    vs:term_status "experimental" .
+
+artinq:numero a rdf:Property ;
+    rdfs:label "a comme numéro" ;
+    rdfs:comment "Numéro de l'interaction (1 à 4)." ;
+    rdfs:domain o:Resource ;
+    vs:term_status "experimental" .
+
+artinq:extraitUser a rdf:Property ;
+    rdfs:label "a comme extrait utilisateur" ;
+    rdfs:comment "Début du message de l'utilisateur (bulle User)." ;
+    rdfs:domain o:Resource ;
+    vs:term_status "experimental" .
+
+artinq:extraitLLM a rdf:Property ;
+    rdfs:label "a comme extrait LLM" ;
+    rdfs:comment "Début de la réponse du LLM (bulle LLM)." ;
+    rdfs:domain o:Resource ;
+    vs:term_status "experimental" .
+
+artinq:pourInteraction a rdf:Property ;
+    rdfs:label "pour l'interaction" ;
+    rdfs:comment "Interaction concernée par le tour de soustraction." ;
+    rdfs:domain o:Resource ;
+    vs:term_status "experimental" .
+
+artinq:tour a rdf:Property ;
+    rdfs:label "a comme tour" ;
+    rdfs:comment "Numéro du tour de soustraction (1 à 3)." ;
+    rdfs:domain o:Resource ;
+    vs:term_status "experimental" .
+
+artinq:roleUser a rdf:Property ;
+    rdfs:label "a comme rôle utilisateur" ;
+    rdfs:comment "Terme qui remplace « moi / l'utilisateur »." ;
+    rdfs:domain o:Resource ;
+    vs:term_status "experimental" .
+
+artinq:roleLLM a rdf:Property ;
+    rdfs:label "a comme rôle LLM" ;
+    rdfs:comment "Terme qui remplace « la machine / l'IA »." ;
+    rdfs:domain o:Resource ;
+    vs:term_status "experimental" .
+
+artinq:evaluation a rdf:Property ;
+    rdfs:label "a comme évaluation" ;
+    rdfs:comment "Commentaire sur la justesse des termes de ce tour." ;
+    rdfs:domain o:Resource ;
+    vs:term_status "experimental" .
+
+artinq:aRaffiner a rdf:Property ;
+    rdfs:label "est à raffiner" ;
+    rdfs:comment "oui / non : faut-il un nouveau tour de soustraction ?" ;
+    rdfs:domain o:Resource ;
+    vs:term_status "experimental" .
+
+artinq:estFinal a rdf:Property ;
+    rdfs:label "est le tour final" ;
+    rdfs:comment "oui / non : ce tour donne les termes finaux du lexique." ;
+    rdfs:domain o:Resource ;
+    vs:term_status "experimental" .
+
+artinq:typeTerme a rdf:Property ;
+    rdfs:label "a comme type de terme" ;
+    rdfs:comment "titre professionnel, service en ligne, entreprise, entité indéfinie, personne privée." ;
+    rdfs:domain o:Resource ;
+    vs:term_status "experimental" .
+
+artinq:evalueTerme a rdf:Property ;
+    rdfs:label "évalue le terme" ;
+    rdfs:comment "Terme final évalué." ;
+    rdfs:domain o:Resource ;
+    vs:term_status "experimental" .
+
+artinq:adequat a rdf:Property ;
+    rdfs:label "est adéquat" ;
+    rdfs:comment "oui / non : le terme décrit-il bien qui écrit/parle ?" ;
+    rdfs:domain o:Resource ;
+    vs:term_status "experimental" .
+
+artinq:etrange a rdf:Property ;
+    rdfs:label "est étrange" ;
+    rdfs:comment "oui / non : le terme paraît-il étrange (uncanny) ?" ;
+    rdfs:domain o:Resource ;
+    vs:term_status "experimental" .
+
+artinq:correspondTon a rdf:Property ;
+    rdfs:label "correspond au ton" ;
+    rdfs:comment "oui / non : le rôle correspond-il au ton de la réponse ?" ;
+    rdfs:domain o:Resource ;
+    vs:term_status "experimental" .
+
+artinq:justification a rdf:Property ;
+    rdfs:label "a comme justification" ;
+    rdfs:comment "Pourquoi : explication de l'évaluation." ;
+    rdfs:domain o:Resource ;
+    vs:term_status "experimental" .
+
+artinq:aEvaluation a rdf:Property ;
+    rdfs:label "a comme évaluation de terme" ;
+    rdfs:comment "Évaluation de terme rattachée à la réflexion." ;
+    rdfs:domain o:Resource ;
+    vs:term_status "experimental" .
+

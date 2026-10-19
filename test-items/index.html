@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Items de test artinq</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 780px; margin: 2rem auto; padding: 0 1rem; background:#f6f6f4; color:#222; }
+  h1 { font-size: 1.5rem; }
+  fieldset { border: 1px solid #ccc; border-radius: 8px; margin: 1rem 0; padding: 1rem; background:#fff; }
+  label { display:block; margin:.4rem 0 .2rem; font-weight:600; }
+  input { width:100%; padding:.5rem; box-sizing:border-box; }
+  button { margin-top:.8rem; padding:.6rem 1rem; border:0; border-radius:6px; background:#2b5fd9; color:#fff; cursor:pointer; font-size:1rem; }
+  button:disabled { background:#999; }
+  pre { background:#111; color:#9f9; padding:1rem; border-radius:8px; white-space:pre-wrap; min-height:3rem; }
+</style>
+</head>
+<body>
+<h1>Créer les items de test de l'exercice 5 (vocabulaire artinq)</h1>
+<p>Cette page crée, avec la bibliothèque <b>omk</b>, un jeu d'items reliés entre eux en utilisant les modèles de ressources <code>artinq …</code>. L'exemple vient du vademecum (« Birthday celebration dish ideas »).</p>
+
+<fieldset>
+  <legend>Connexion à l'API</legend>
+  <label for="api">Adresse de l'API</label>
+  <input id="api" value="http://localhost/omeka-s/api/">
+  <label for="ident">key_identity</label>
+  <input id="ident">
+  <label for="key">key_credential</label>
+  <input id="key" type="password">
+  <button id="go">Créer les items de test</button>
+</fieldset>
+
+<h2>Journal</h2>
+<pre id="out">En attente…</pre>
+
+<script type="module">
+import { omk } from './omk.js';
+
+const out = document.getElementById('out');
+const log = (m) => { out.textContent += '\n' + m; };
+
+// Le jeu de données de test (exemple du vademecum, p. 32)
+const DATA = {
+  participant: { titre: 'Hakima Lakab', github: 'lakabhakima45-cmd' },
+  llm: { titre: 'ChatGPT', version: 'GPT-4o' },
+  conversation: { titre: 'Birthday celebration dish ideas', date: '2026-10-19' },
+  interaction: {
+    numero: '1',
+    user: 'Can you give me easy-to-make dish ideas for a birthday celebration with 60 people?',
+    llm: 'Here are some easy dishes that scale well for a large group…'
+  },
+  tours: [
+    { tour: '1', user: ['A private individual', 'personne privée'], llm: ['A friend with a knack for cooking', 'personne privée'],
+      evaluation: 'Trop générique.', raffiner: 'oui', final: 'non' },
+    { tour: '2', user: ['An event planner', 'titre professionnel'], llm: ['A cooking website', 'service en ligne'],
+      evaluation: 'Plus précis, mais le site ne pose pas de questions.', raffiner: 'oui', final: 'non' },
+    { tour: '3', user: ['A company happiness manager', 'titre professionnel'], llm: ['A caterer', 'titre professionnel'],
+      evaluation: 'Les rôles correspondent bien au ton de l\'échange.', raffiner: 'non', final: 'oui' }
+  ],
+  evaluation: { adequat: 'oui', etrange: 'non', ton: 'oui',
+    justification: 'La réponse donne des quantités et des conseils pratiques, comme un traiteur.' },
+  reflexion: 'Les termes finaux décrivent bien l\'échange, mais « traiteur » donne à la machine une expertise et une responsabilité qu\'elle n\'a pas : elle ne livre rien et ne connaît pas les invités.'
+};
+
+document.getElementById('go').onclick = async () => {
+  const btn = document.getElementById('go');
+  btn.disabled = true;
+  out.textContent = 'Connexion…';
+  try {
+    // omk garde les métadonnées 24 h en cache : on le vide pour charger le vocabulaire artinq
+    localStorage.removeItem('omk_metadata_cache');
+    const api = new omk({
+      api: document.getElementById('api').value,
+      ident: document.getElementById('ident').value,
+      key: document.getElementById('key').value,
+      vocabs: ['dcterms', 'artinq']
+    });
+    const nbArtinq = api.props.filter(p => p['o:term'].startsWith('artinq:')).length;
+    log('Propriétés artinq chargées : ' + nbArtinq);
+    if (!nbArtinq) throw new Error('Le vocabulaire artinq n\'est pas importé dans Omeka.');
+    log('Modèles de ressources : ' + api.rts.map(r => r['o:label']).join(', '));
+
+    const create = async (rt, data) => {
+      const rs = await api.createItem(Object.assign({
+        'o:resource_template': 'artinq ' + rt,
+        'o:resource_class': 'artinq:' + rt
+      }, data));
+      if (!rs || !rs['o:id']) throw new Error('Création ' + rt + ' impossible : ' + JSON.stringify(rs));
+      log('✅ ' + rt + ' #' + rs['o:id'] + ' — ' + rs['o:title']);
+      return { rid: rs['o:id'] };
+    };
+
+    const d = DATA;
+    const participant = await create('Participant', { 'dcterms:title': d.participant.titre, 'artinq:compteGithub': d.participant.github });
+    const llm = await create('LLM', { 'dcterms:title': d.llm.titre, 'artinq:version': d.llm.version });
+    const conv = await create('Conversation', {
+      'dcterms:title': d.conversation.titre, 'dcterms:date': d.conversation.date,
+      'artinq:aParticipant': participant, 'artinq:avecLLM': llm });
+    const inter = await create('Interaction', {
+      'dcterms:title': d.conversation.titre + ' — interaction ' + d.interaction.numero,
+      'artinq:dansConversation': conv, 'artinq:numero': d.interaction.numero,
+      'artinq:extraitUser': d.interaction.user, 'artinq:extraitLLM': d.interaction.llm });
+
+    let termeFinal = null;
+    for (const t of d.tours) {
+      const tu = await create('Terme', { 'dcterms:title': t.user[0], 'artinq:typeTerme': t.user[1] });
+      const tl = await create('Terme', { 'dcterms:title': t.llm[0], 'artinq:typeTerme': t.llm[1] });
+      await create('Substitution', {
+        'dcterms:title': 'Tour ' + t.tour + ' : ' + t.user[0] + ' / ' + t.llm[0],
+        'artinq:pourInteraction': inter, 'artinq:tour': t.tour,
+        'artinq:roleUser': tu, 'artinq:roleLLM': tl,
+        'artinq:evaluation': t.evaluation, 'artinq:aRaffiner': t.raffiner, 'artinq:estFinal': t.final });
+      if (t.final === 'oui') termeFinal = tl;
+    }
+
+    const ev = await create('EvaluationTerme', {
+      'dcterms:title': 'Évaluation du terme « A caterer »',
+      'artinq:evalueTerme': termeFinal, 'artinq:adequat': d.evaluation.adequat,
+      'artinq:etrange': d.evaluation.etrange, 'artinq:correspondTon': d.evaluation.ton,
+      'artinq:justification': d.evaluation.justification });
+    await create('Reflexion', {
+      'dcterms:title': 'Réflexion Ex5b — ' + d.participant.titre,
+      'dcterms:description': d.reflexion,
+      'artinq:aParticipant': participant, 'artinq:aEvaluation': ev });
+
+    log('\n🎉 Terminé ! Va voir les items dans Omeka : http://localhost/omeka-s/admin/item');
+  } catch (e) {
+    log('\n❌ Erreur : ' + e.message);
+  }
+  btn.disabled = false;
+};
+</script>
+</body>
+</html>
