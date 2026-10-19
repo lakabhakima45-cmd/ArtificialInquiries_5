@@ -80,21 +80,6 @@ Préfixes : `title`, `date` et `description` viennent de **Dublin Core** (`dcter
 
 Les liens entre classes sont des propriétés `artinq` de type « Item » dans Omeka S : on les crée de l'enfant vers le parent (une Interaction pointe vers sa Conversation, etc.).
 
-## Comment ces classes ont été choisies (utilisation de l'IA)
+## Utilisation de l'IA
 
-Les classes et les propriétés de ce diagramme ont été définies avec l'aide d'une IA générative : **Claude** (Anthropic), modèle **Claude Opus 5.5**.
-
-**Démarche :**
-1. J'ai donné à l'IA le texte de l'exercice 5 (vademecum *Artificial Inquiries*, p. 31-36) et la consigne du cours.
-2. L'IA a proposé une classe pour chaque élément de l'exercice :
-   - les **4 conversations** à choisir → `Conversation` ;
-   - le **message + la réponse** recopiés dans les bulles « User » et « LLM » → `Interaction` ;
-   - les **tours de soustraction** (jusqu'à 3) → `Substitution` ;
-   - les **mots de remplacement** (« un traiteur », « Wikipedia »…) → `Terme` ;
-   - les **3 questions de l'Ex5b** (adéquat ? étrange ? correspond au ton ?) → `EvaluationTerme` ;
-   - le **texte de réflexion** de l'Ex5b → `Reflexion` ;
-   - la personne qui fait l'exercice et le LLM utilisé → `Participant` et `LLM`.
-3. J'ai vérifié que chaque classe correspond bien à une étape ou à une donnée de l'exercice.
-4. J'ai testé le modèle dans mon Omeka S local en créant les items de l'exemple du vademecum (« Birthday celebration dish ideas »).
-
-**Pourquoi ces classes sont utiles :** elles permettent d'enregistrer toutes les données de l'exercice et de les relier entre elles. On peut ainsi retrouver pour chaque interaction l'historique des tours, construire le lexique final et comparer les termes choisis par plusieurs participants.
+Ce diagramme a été réalisé avec l'aide de l'IA **Claude** (Anthropic, modèle Claude Opus 5.5). Les classes ont été vérifiées et testées dans mon Omeka S local.
