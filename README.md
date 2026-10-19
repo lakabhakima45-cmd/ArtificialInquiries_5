@@ -66,19 +66,4 @@ Remplacer les pages papier par une application web qui permet de :
 
 ## 6. Utilisation de l'IA
 
-Ce travail a été réalisé avec l'aide d'une IA générative : **Claude** (Anthropic), modèle **Claude Opus 5.5**, utilisé dans l'application Claude.
-
-**Ce que l'IA a fait :**
-- m'a guidée pas à pas pour installer XAMPP et Omeka S, et pour tester omk ;
-- a proposé une première version du README et du diagramme de classes ;
-- a généré le vocabulaire `artificial_inquiries.ttl` à partir de l'exemple `jdc.ttl` du cours ;
-- a généré les 8 modèles de ressources (JSON) et la page `test-items` ;
-- m'a aidée à reformuler et à expliquer l'exercice.
-
-**Ce que j'ai fait moi-même :**
-- le choix de l'exercice et du thème, la lecture du protocole et les annotations Zotero ;
-- l'installation et la configuration d'Omeka S en local ;
-- l'import du vocabulaire et des modèles de ressources, la création des items de test, l'export de la base ;
-- la vérification des résultats et la mise en ligne sur GitHub.
-
-Tous les contenus proposés par l'IA ont été relus et testés dans mon Omeka S local avant d'être publiés.
+Ce travail a été réalisé avec l'aide de l'IA générative **Claude** (Anthropic, modèle Claude Opus 5.5), utilisée pour m'accompagner dans l'installation, la rédaction et la préparation des fichiers. J'ai moi-même installé et configuré Omeka S, importé le vocabulaire et les modèles, créé et vérifié les items de test, puis mis le travail en ligne.
