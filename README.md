@@ -4,6 +4,8 @@ Exercice 5 du protocole **Artificial Inquiries** (Vademecum, septembre 2025, blo
 
 Auteure : Hakima Lakab (`lakabhakima45-cmd`)
 
+🔗 **Application en ligne :** https://lakabhakima45-cmd.github.io/ArtificialInquiries_5/response.html
+
 ## 1. Description de l'exercice
 
 Quand on parle de nos échanges avec un LLM, on dit spontanément « j'ai demandé à Claude », « l'IA m'a répondu ». L'exercice pose la question : **que reste-t-il si on retire les mots « machine », « IA », « LLM », « Claude » ou même « il » de la description ?**
@@ -36,9 +38,9 @@ Remplacer les pages papier par une application web qui permet de :
 | Stockage des données | **Omeka S** en local (Apache + PHP + MySQL avec XAMPP) |
 | Vocabulaire | Vocabulaire **artinq** (`artificial_inquiries.ttl`) : 8 classes et 22 propriétés, espace de noms `https://humanum-p8.fr/omk_artificialinquiries/onto/artinq#` |
 | Modèle de données | Diagramme de classes (`diagram_class.md`) traduit en **8 modèles de ressources** Omeka S (`resource-template/`) |
-| Communication avec Omeka S | **API REST** d'Omeka S via la bibliothèque JavaScript **omk** |
-| Interface de saisie | **HTML / CSS / JavaScript** |
-| Visualisation du lexique | **D3.js** |
+| Communication avec Omeka S | **API REST** d'Omeka S (https://omeka.org/s/docs/developer/api/) |
+| Interface CRUD | `response.html` en **HTML / CSS / JavaScript**, publiée avec **GitHub Pages** |
+| Authentification | Local (clé API Omeka S), GitHub (jeton d'accès), Google (Google Identity Services) |
 | Diagrammes | **Mermaid** |
 | Versionnement | **Git / GitHub** |
 
@@ -49,21 +51,57 @@ Remplacer les pages papier par une application web qui permet de :
 3. ✅ Créer le vocabulaire **artinq** et l'importer dans Omeka S.
 4. ✅ Créer les modèles de ressources correspondant aux classes du diagramme.
 5. ✅ Créer des items de test (exemple du vademecum « Birthday celebration dish ideas ») et exporter la base (`omk.sql`).
-6. ⏳ Développer le formulaire de saisie Ex5a.
-7. ⏳ Développer la page de réflexion Ex5b.
-8. ⏳ Ajouter la visualisation du lexique.
+6. ✅ Créer l'interface CRUD `response.html` et l'activer avec GitHub Pages.
+7. ✅ Gérer l'authentification : local, GitHub, Google.
+8. ⏳ Authentification CAS.
+9. ⏳ Visualisation du lexique.
 
 ## 5. Fichiers du dépôt
 
 | Fichier / dossier | Contenu |
 |---|---|
 | `README.md` | Ce document |
+| `response.html` | Interface CRUD de l'exercice (GitHub Pages) |
 | `diagram_class.md` | Diagramme de classes Mermaid (aligné sur le vocabulaire artinq) |
 | `artificial_inquiries.ttl` | Vocabulaire **artinq** (8 classes, 22 propriétés) |
 | `resource-template/` | Les 8 modèles de ressources Omeka S (un fichier JSON par classe) |
 | `test-items/` | Page HTML qui crée les items de test dans Omeka S avec la bibliothèque **omk** |
-| `omk.sql` | Export de la base de données Omeka S locale (vocabulaire, modèles et items de test) |
+| `omk.sql` | Export de la base de données Omeka S locale |
 
-## 6. Utilisation de l'IA
+## 6. Interface CRUD (`response.html`)
 
-Ce travail a été réalisé avec l'aide de l'IA générative **Claude** (Anthropic, modèle Claude Opus 5.5), utilisée pour m'accompagner dans l'installation, la rédaction et la préparation des fichiers. J'ai moi-même installé et configuré Omeka S, importé le vocabulaire et les modèles, créé et vérifié les items de test, puis mis le travail en ligne.
+**Fonctionnement :**
+- 8 onglets, un par classe du vocabulaire (Participants, LLM, Conversations, Interactions, Substitutions, Termes, Évaluations, Réflexions).
+- Pour chaque classe : **lister**, **afficher**, **créer**, **modifier** et **supprimer** des items (CRUD) via l'API REST d'Omeka S.
+- Les formulaires sont générés automatiquement à partir des **modèles de ressources** `artinq`.
+- Les liens entre items (ex. une Interaction → sa Conversation) se choisissent dans des listes, et la fiche d'un item affiche les items qui pointent vers lui.
+
+**Authentification :**
+
+| Méthode | Droits | Principe |
+|---|---|---|
+| Local (Omeka S) | Lecture + écriture | Email + clé API Omeka S (`key_identity`, `key_credential`) |
+| GitHub | Lecture | Jeton d'accès personnel GitHub ; le compte est relié au Participant dont `artinq:compteGithub` correspond |
+| Google | Lecture | Google Identity Services (client OAuth créé dans Google Cloud) |
+| CAS Paris 8 | — | Non configuré : nécessite l'enregistrement du service auprès de l'université et un serveur de validation |
+
+**Utilisation :**
+1. Démarrer XAMPP (Apache + MySQL) : l'Omeka S est installé en local.
+2. Ouvrir la page en ligne et indiquer l'adresse de l'API (par défaut `http://localhost/omeka-s/api/`).
+3. Se connecter avec une des méthodes.
+
+**Configuration CORS :** pour que la page publiée sur GitHub Pages puisse appeler l'API locale, ces lignes ont été ajoutées au début du fichier `.htaccess` d'Omeka S :
+
+```apache
+<IfModule mod_headers.c>
+    Header always set Access-Control-Allow-Origin "*"
+    Header always set Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+    Header always set Access-Control-Allow-Headers "Content-Type"
+</IfModule>
+RewriteCond %{REQUEST_METHOD} OPTIONS
+RewriteRule ^(.*)$ $1 [R=200,L]
+```
+
+## 7. Utilisation de l'IA
+
+Ce travail a été réalisé avec l'aide de l'IA générative **Claude** (Anthropic, modèle Claude Opus 5.5), utilisée pour m'accompagner dans l'installation, la rédaction et la préparation des fichiers. J'ai moi-même installé et configuré Omeka S, importé le vocabulaire et les modèles, créé et vérifié les items de test, configuré GitHub Pages et l'authentification Google, testé l'interface, puis mis le travail en ligne.
