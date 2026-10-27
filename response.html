@@ -86,8 +86,9 @@
   <section id="authView" class="panel" hidden>
     <h2>Connexion</h2>
     <label for="apiUrl">Adresse de l'API Omeka S</label>
-    <input id="apiUrl" value="http://localhost/omeka-s/api/">
-    <p class="hint">Par défaut : l'Omeka S installé en local avec XAMPP.</p>
+    <input id="apiUrl" value="http://localhost/omeka-s/api/" list="apiList">
+    <datalist id="apiList"><option value="http://localhost/omeka-s/api/"><option value="https://humanum-p8.fr/omk_artificialinquiries/api/"></datalist>
+    <p class="hint">Local : <code>http://localhost/omeka-s/api/</code> · Omeka du cours : <code>https://humanum-p8.fr/omk_artificialinquiries/api/</code>. Le vocabulaire (local ou commun) est détecté automatiquement.</p>
 
     <div class="providers">
       <form class="provider" id="formLocal">
@@ -160,27 +161,51 @@
 // ─────────────────────────────────────────────────────────────
 // Configuration de l'exercice
 // ─────────────────────────────────────────────────────────────
-const CLASSES = [
-  { name: 'Participant',     label: 'Participants',  hint: 'La personne qui réalise l\'exercice.' },
-  { name: 'LLM',             label: 'LLM',           hint: 'Le modèle utilisé (ChatGPT, Claude…).' },
-  { name: 'Conversation',    label: 'Conversations', hint: 'Les 4 conversations choisies avec un LLM.' },
-  { name: 'Interaction',     label: 'Interactions',  hint: 'Ex5a — un message (bulle User) et la réponse (bulle LLM).' },
-  { name: 'Substitution',    label: 'Substitutions', hint: 'Ex5a — un tour de soustraction (1 à 3) : un rôle pour l\'utilisateur, un rôle pour le LLM.' },
-  { name: 'Terme',           label: 'Termes',        hint: 'Le lexique : les mots de remplacement (« un traiteur », « Wikipedia »…).' },
-  { name: 'EvaluationTerme', label: 'Évaluations',   hint: 'Ex5b — adéquat ? étrange ? correspond au ton ?' },
-  { name: 'Reflexion',       label: 'Réflexions',    hint: 'Ex5b — le texte de réflexion sur le lexique final.' },
-];
-// Propriétés de type « lien vers un item » : classe visée
-const LINKS = {
-  'artinq:aParticipant': 'Participant', 'artinq:avecLLM': 'LLM',
-  'artinq:dansConversation': 'Conversation', 'artinq:pourInteraction': 'Interaction',
-  'artinq:roleUser': 'Terme', 'artinq:roleLLM': 'Terme', 'artinq:evalueTerme': 'Terme',
-  'artinq:aEvaluation': 'EvaluationTerme',
+// Deux configurations : vocabulaire artinq local (mon Omeka) ou vocabulaire artinq commun (Omeka du cours)
+const CONFIGS = {
+  local: {
+    tpl: 'artinq',
+    classes: [
+      { name: 'Participant',     label: 'Participants',  hint: 'La personne qui réalise l\'exercice.' },
+      { name: 'LLM',             label: 'LLM',           hint: 'Le modèle utilisé (ChatGPT, Claude…).' },
+      { name: 'Conversation',    label: 'Conversations', hint: 'Les 4 conversations choisies avec un LLM.' },
+      { name: 'Interaction',     label: 'Interactions',  hint: 'Ex5a — un message (bulle User) et la réponse (bulle LLM).' },
+      { name: 'Substitution',    label: 'Substitutions', hint: 'Ex5a — un tour de soustraction (1 à 3) : un rôle pour l\'utilisateur, un rôle pour le LLM.' },
+      { name: 'Terme',           label: 'Termes',        hint: 'Le lexique : les mots de remplacement (« un traiteur », « Wikipedia »…).' },
+      { name: 'EvaluationTerme', label: 'Évaluations',   hint: 'Ex5b — adéquat ? étrange ? correspond au ton ?' },
+      { name: 'Reflexion',       label: 'Réflexions',    hint: 'Ex5b — le texte de réflexion sur le lexique final.' },
+    ],
+    links: {
+      'artinq:aParticipant': 'Participant', 'artinq:avecLLM': 'LLM',
+      'artinq:dansConversation': 'Conversation', 'artinq:pourInteraction': 'Interaction',
+      'artinq:roleUser': 'Terme', 'artinq:roleLLM': 'Terme', 'artinq:evalueTerme': 'Terme',
+      'artinq:aEvaluation': 'EvaluationTerme',
+    },
+    long: ['artinq:extraitUser', 'artinq:extraitLLM', 'artinq:evaluation', 'artinq:justification', 'dcterms:description'],
+  },
+  commun: {
+    tpl: 'Ex5',
+    classes: [
+      { name: 'Participant',  label: 'Participants',  hint: 'La personne qui réalise l\'exercice.' },
+      { name: 'LLM',          label: 'LLM',           hint: 'Le modèle utilisé (ChatGPT, Claude…).' },
+      { name: 'Conversation', label: 'Conversations', hint: 'Les 4 conversations choisies avec un LLM.' },
+      { name: 'Echange',      label: 'Échanges',      hint: 'Ex5a — un message (bulle User) et la réponse (bulle LLM).' },
+      { name: 'Substitution', label: 'Substitutions', hint: 'Ex5a — un tour de soustraction (1 à 3) : un rôle pour l\'utilisateur, un rôle pour le LLM.' },
+      { name: 'Terme',        label: 'Termes',        hint: 'Le lexique : les mots de remplacement (« un traiteur », « Wikipedia »…).' },
+      { name: 'Evaluation',   label: 'Évaluations',   hint: 'Ex5b — adéquat ? étrange ? correspond au ton ?' },
+      { name: 'Reflexion',    label: 'Réflexions',    hint: 'Ex5b — le texte de réflexion sur le lexique final.' },
+    ],
+    links: {
+      'artinq:realiseePar': 'Participant', 'artinq:utiliseLLM': 'LLM',
+      'artinq:aPourConversation': 'Conversation', 'artinq:pourEchange': 'Echange',
+      'artinq:roleUtilisateur': 'Terme', 'artinq:roleLLM': 'Terme', 'artinq:evalueTerme': 'Terme',
+      'artinq:aPourEvaluation': 'Evaluation',
+    },
+    long: ['artinq:extraitUtilisateur', 'artinq:extraitLLM', 'artinq:justification', 'artinq:texte'],
+  },
 };
-// Propriétés affichées en zone de texte longue
-const LONG = new Set(['artinq:extraitUser', 'artinq:extraitLLM', 'artinq:evaluation',
-  'artinq:justification', 'dcterms:description']);
-// Propriétés à valeur oui / non
+let CONF = CONFIGS.local, CLASSES = CONF.classes, LINKS = CONF.links, LONG = new Set(CONF.long);
+// Propriétés à valeur oui / non (mêmes noms dans les deux vocabulaires)
 const YESNO = new Set(['artinq:aRaffiner', 'artinq:estFinal', 'artinq:adequat',
   'artinq:etrange', 'artinq:correspondTon']);
 
@@ -244,9 +269,14 @@ async function loadSchema() {
   const classes = await api('resource_classes?per_page=100&vocabulary_prefix=artinq', { auth: false });
   if (!classes.length) throw new Error('Le vocabulaire artinq n\'est pas importé dans Omeka S.');
   classes.forEach(c => { state.classes[c['o:local_name']] = c; });
-  const rts = await api('resource_templates?per_page=100', { auth: false });
+  // détection automatique du vocabulaire (commun du cours ou local)
+  CONF = state.propsByTerm['artinq:extraitUtilisateur'] ? CONFIGS.commun : CONFIGS.local;
+  CLASSES = CONF.classes; LINKS = CONF.links; LONG = new Set(CONF.long);
+  if (!CLASSES.some(c => c.name === state.current)) state.current = 'Conversation';
+  state.templates = {};
+  const rts = await api('resource_templates?per_page=500', { auth: false });
   rts.forEach(rt => {
-    const m = /^artinq\s+(\w+)$/i.exec(rt['o:label'].trim());
+    const m = new RegExp('^' + CONF.tpl + '\\s+(\\w+)$', 'i').exec(rt['o:label'].trim());
     if (m) state.templates[m[1]] = rt;
   });
 }
@@ -256,15 +286,24 @@ async function loadSchema() {
 // ─────────────────────────────────────────────────────────────
 async function loginLocal(mail, ident, key) {
   state.session = { provider: 'local', ident, key };
-  let users;
-  try { users = await api('users?email=' + encodeURIComponent(mail)); }
-  catch (e) {
-    state.session = null;
-    throw new Error(e.message.startsWith('Erreur API') ? 'Email ou clé API incorrects.' : e.message);
+  // 1) on essaie de retrouver le compte par son email (possible pour un administrateur)
+  let u = null;
+  try {
+    const users = await api('users?email=' + encodeURIComponent(mail));
+    u = Array.isArray(users) ? users.find(x => (x['o:email'] || '').toLowerCase() === mail.toLowerCase()) : null;
+  } catch (e) {
+    if (!e.message.startsWith('Erreur API')) { state.session = null; throw e; }
   }
-  const u = Array.isArray(users) && users.find(x => x['o:email'] === mail);
-  if (!u) { state.session = null; throw new Error('Email ou clé API incorrects.'); }
-  state.session = { provider: 'local', ident, key, name: u['o:name'], email: mail, role: u['o:role'], canWrite: true };
+  // 2) sinon (compte non administrateur), on vérifie simplement que la clé API est acceptée
+  if (!u) {
+    try { await api('items?per_page=1'); }
+    catch (e) {
+      state.session = null;
+      throw new Error(e.message.startsWith('Erreur API') ? 'Clé API refusée par Omeka S (' + e.message.replace('Erreur API : ', '') + ').' : e.message);
+    }
+  }
+  state.session = { provider: 'local', ident, key, name: u ? u['o:name'] : mail, email: mail,
+    role: u ? u['o:role'] : '', canWrite: true };
 }
 
 // Connexion Google (Google Identity Services) : décode le jeton d'identité (JWT)
@@ -368,7 +407,9 @@ async function selectClass(name) {
 async function fetchItemsOfClass(name) {
   const cls = state.classes[name];
   if (!cls) return [];
-  return api(`items?resource_class_id=${cls['o:id']}&per_page=200&sort_by=created&sort_order=desc`);
+  const tpl = state.templates[name];
+  const filter = tpl ? `resource_template_id=${tpl['o:id']}` : `resource_class_id=${cls['o:id']}`;
+  return api(`items?${filter}&per_page=200&sort_by=created&sort_order=desc`);
 }
 
 async function loadList() {
