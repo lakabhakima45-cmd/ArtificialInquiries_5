@@ -86,8 +86,8 @@
   <section id="authView" class="panel" hidden>
     <h2>Connexion</h2>
     <label for="apiUrl">Adresse de l'API Omeka S</label>
-    <input id="apiUrl" value="http://localhost/omeka-s/api/" list="apiList">
-    <datalist id="apiList"><option value="http://localhost/omeka-s/api/"><option value="https://humanum-p8.fr/omk_artificialinquiries/api/"></datalist>
+    <input id="apiUrl" value="https://humanum-p8.fr/omk_artificialinquiries/api/" list="apiList">
+    <datalist id="apiList"><option value="https://humanum-p8.fr/omk_artificialinquiries/api/"><option value="http://localhost/omeka-s/api/"></datalist>
     <p class="hint">Local : <code>http://localhost/omeka-s/api/</code> · Omeka du cours : <code>https://humanum-p8.fr/omk_artificialinquiries/api/</code>. Le vocabulaire (local ou commun) est détecté automatiquement.</p>
 
     <div class="providers">
@@ -237,10 +237,23 @@ function keys() {
   const s = state.session;
   return s && s.ident ? `key_identity=${encodeURIComponent(s.ident)}&key_credential=${encodeURIComponent(s.key)}` : '';
 }
+// Omeka S commun du cours. Son serveur n'envoie pas d'en-tête CORS : depuis un hébergement
+// avec PHP (alwaysdata), les requêtes passent par proxy.php (même origine) qui relaie vers l'API.
+const COMMON_API = 'https://humanum-p8.fr/omk_artificialinquiries/api/';
+// GitHub Pages ne peut pas exécuter le proxy PHP : on redirige vers la version hébergée sur alwaysdata
+const HOSTED_URL = 'https://lakab.alwaysdata.net/response.html';
+if (location.hostname.endsWith('github.io')) location.replace(HOSTED_URL);
+const USE_PROXY = /^https?:$/.test(location.protocol)
+  && !location.hostname.endsWith('github.io')
+  && !['localhost', '127.0.0.1'].includes(location.hostname);
+
 async function api(path, { method = 'GET', body, auth = true } = {}) {
   const sep = path.includes('?') ? '&' : '?';
   const k = auth ? keys() : '';
-  const url = state.api + path + (k ? sep + k : '');
+  const full = path + (k ? sep + k : '');
+  const url = (USE_PROXY && state.api === COMMON_API)
+    ? 'proxy.php?path=' + encodeURIComponent(full)
+    : state.api + full;
   let res;
   try {
     res = await fetch(url, {
