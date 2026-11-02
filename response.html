@@ -117,10 +117,10 @@
         <div id="googleBtn" style="margin-top:.8rem"></div>
       </div>
 
-      <div class="provider off">
+      <div class="provider" id="providerCas">
         <h3>CAS Paris 8</h3>
-        <p class="hint">Non configuré : nécessite l'enregistrement du service auprès du CAS de l'université et un serveur de validation des tickets.</p>
-        <button disabled>Se connecter avec le CAS</button>
+        <p class="hint">Lecture seule. Connexion avec ton compte de l'université Paris 8 : le ticket CAS est validé par le serveur (<code>cas.php</code>).</p>
+        <button id="btnCas" type="button">Se connecter avec le CAS</button>
       </div>
     </div>
 
@@ -380,7 +380,7 @@ function renderWho() {
   if (!s) {
     who.innerHTML = '<span class="badge">Visiteur · lecture seule</span> <button id="btnLogout">Se connecter</button>';
   } else {
-    const via = { local: 'Omeka S', github: 'GitHub', google: 'Google' }[s.provider];
+    const via = { local: 'Omeka S', github: 'GitHub', google: 'Google', cas: 'CAS Paris 8' }[s.provider];
     who.innerHTML = (s.avatar ? `<img src="${esc(s.avatar)}" alt="">` : '') +
       `<span><strong>${esc(s.name)}</strong> <span class="badge">${via}${s.canWrite ? '' : ' · lecture seule'}</span>` +
       (s.participant ? `<br><span class="hint">Participant : ${esc(s.participant.title)}</span>` : '') +
@@ -391,6 +391,7 @@ function renderWho() {
 }
 
 function logout() {
+  if (state.session && state.session.provider === 'cas') fetch('cas.php?action=logout').catch(() => {});
   state.session = null;
   store.del('artinq_session');
   $('#appView').hidden = true;
@@ -651,9 +652,38 @@ $('#btnAnon').onclick = async () => {
   try { state.session = null; await startApp(); } catch (err) { flash(err.message, 'err'); }
 };
 
+// Connexion CAS Paris 8 : cas.php redirige vers le CAS, valide le ticket côté serveur,
+// puis revient ici ; on lui demande ensuite qui est connecté.
+if (USE_PROXY) {
+  $('#btnCas').onclick = () => { location.href = 'cas.php'; };
+} else {
+  $('#btnCas').disabled = true;
+  $('#providerCas').classList.add('off');
+}
+async function casUser() {
+  try {
+    const r = await fetch('cas.php?action=me', { cache: 'no-store' });
+    return r.ok ? (await r.json()).user : null;
+  } catch { return null; }
+}
+
 (async () => {
   const savedApi = store.get('artinq_api');
   if (savedApi) $('#apiUrl').value = savedApi;
+  const params = new URLSearchParams(location.search);
+  if (USE_PROXY && params.has('cas')) {
+    history.replaceState(null, '', location.pathname);
+    if (params.get('cas') === 'ok') {
+      const user = await casUser();
+      if (user) {
+        state.session = { provider: 'cas', name: user, login: user, canWrite: false };
+        try { await startApp(); flash('Connectée avec le CAS Paris 8 (' + user + ').'); return; }
+        catch (e) { flash(e.message, 'err'); state.session = null; }
+      }
+    } else {
+      flash('Connexion CAS refusée ou ticket invalide.', 'err');
+    }
+  }
   const saved = store.get('artinq_session');
   if (saved) {
     state.session = saved;
