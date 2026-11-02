@@ -105,7 +105,7 @@
 
       <div class="provider" id="providerGithubOauth" hidden>
         <h3>GitHub</h3>
-        <p class="hint">Lecture seule. Tu es redirigée vers GitHub pour autoriser l'application. Le compte est relié au Participant dont <code>artinq:compteGithub</code> correspond.</p>
+        <p class="hint">Lecture et écriture (sur l'Omeka du cours). Tu es redirigée vers GitHub pour autoriser l'application. Le compte est relié au Participant dont <code>artinq:compteGithub</code> correspond.</p>
         <button id="btnGithubOauth" type="button">Se connecter avec GitHub</button>
       </div>
 
@@ -119,13 +119,13 @@
 
       <div class="provider">
         <h3>Google</h3>
-        <p class="hint">Lecture seule. Connexion avec un compte Google (Google Identity Services).</p>
+        <p class="hint">Connexion avec un compte Google (Google Identity Services). Lecture et écriture sur l'Omeka du cours.</p>
         <div id="googleBtn" style="margin-top:.8rem"></div>
       </div>
 
       <div class="provider" id="providerCas">
         <h3>CAS Paris 8</h3>
-        <p class="hint">Lecture seule. Connexion avec ton compte de l'université Paris 8 : le ticket CAS est validé par le serveur (<code>cas.php</code>).</p>
+        <p class="hint">Lecture et écriture (sur l'Omeka du cours). Connexion avec ton compte de l'université Paris 8 : le ticket CAS est validé par le serveur (<code>cas.php</code>).</p>
         <button id="btnCas" type="button">Se connecter avec le CAS</button>
       </div>
     </div>
@@ -332,10 +332,22 @@ function decodeJwt(token) {
   const json = decodeURIComponent(atob(b64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
   return JSON.parse(json);
 }
+// Sur alwaysdata : le serveur peut écrire pour les personnes connectées par CAS / GitHub / Google
+// (proxy.php ajoute la clé API du serveur). On lui demande si c'est le cas pour cette session.
+async function serverCanWrite() {
+  if (!USE_PROXY) return false;
+  try { return !!(await (await fetch('proxy.php?action=status', { cache: 'no-store' })).json()).write; }
+  catch { return false; }
+}
 async function onGoogleLogin(response) {
   try {
     const g = decodeJwt(response.credential);
-    state.session = { provider: 'google', name: g.name || g.email, email: g.email, avatar: g.picture, canWrite: false };
+    if (USE_PROXY) {
+      // le jeton Google est vérifié par le serveur (google.php) avant d'ouvrir la session
+      const r = await fetch('google.php', { method: 'POST', body: new URLSearchParams({ credential: response.credential }) });
+      if (!r.ok) throw new Error('Connexion Google refusée par le serveur.');
+    }
+    state.session = { provider: 'google', name: g.name || g.email, email: g.email, avatar: g.picture, canWrite: await serverCanWrite() };
     await startApp();
     flash('Connectée avec Google (' + g.email + ').');
   } catch (err) { state.session = null; flash(err.message, 'err'); }
@@ -399,6 +411,7 @@ function renderWho() {
 function logout() {
   if (state.session && state.session.provider === 'cas') fetch('cas.php?action=logout').catch(() => {});
   if (USE_PROXY && state.session && state.session.provider === 'github') fetch('github.php?action=logout').catch(() => {});
+  if (USE_PROXY && state.session && state.session.provider === 'google') fetch('google.php?action=logout').catch(() => {});
   state.session = null;
   store.del('artinq_session');
   $('#appView').hidden = true;
@@ -687,7 +700,7 @@ async function casUser() {
     if (params.get('cas') === 'ok') {
       const user = await casUser();
       if (user) {
-        state.session = { provider: 'cas', name: user, login: user, canWrite: false };
+        state.session = { provider: 'cas', name: user, login: user, canWrite: await serverCanWrite() };
         try { await startApp(); flash('Connectée avec le CAS Paris 8 (' + user + ').'); return; }
         catch (e) { flash(e.message, 'err'); state.session = null; }
       }
@@ -702,7 +715,7 @@ async function casUser() {
       try { g = (await (await fetch('github.php?action=me', { cache: 'no-store' })).json()).user; } catch {}
     }
     if (g) {
-      state.session = { provider: 'github', name: g.name, login: g.login, avatar: g.avatar, canWrite: false };
+      state.session = { provider: 'github', name: g.name, login: g.login, avatar: g.avatar, canWrite: await serverCanWrite() };
       try { await startApp(); flash('Connectée avec GitHub (' + g.login + ').'); return; }
       catch (e) { flash(e.message, 'err'); state.session = null; }
     } else {
