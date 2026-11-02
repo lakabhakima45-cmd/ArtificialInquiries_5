@@ -103,6 +103,12 @@
         <p class="row" style="margin-top:.8rem"><button class="primary" type="submit">Se connecter</button></p>
       </form>
 
+      <div class="provider" id="providerGithubOauth" hidden>
+        <h3>GitHub</h3>
+        <p class="hint">Lecture seule. Tu es redirigée vers GitHub pour autoriser l'application. Le compte est relié au Participant dont <code>artinq:compteGithub</code> correspond.</p>
+        <button id="btnGithubOauth" type="button">Se connecter avec GitHub</button>
+      </div>
+
       <form class="provider" id="formGithub">
         <h3>GitHub</h3>
         <p class="hint">Lecture seule. Identification par un jeton d'accès personnel GitHub (aucune permission nécessaire). Le compte est relié au Participant dont <code>artinq:compteGithub</code> correspond.</p>
@@ -392,6 +398,7 @@ function renderWho() {
 
 function logout() {
   if (state.session && state.session.provider === 'cas') fetch('cas.php?action=logout').catch(() => {});
+  if (USE_PROXY && state.session && state.session.provider === 'github') fetch('github.php?action=logout').catch(() => {});
   state.session = null;
   store.del('artinq_session');
   $('#appView').hidden = true;
@@ -656,6 +663,10 @@ $('#btnAnon').onclick = async () => {
 // puis revient ici ; on lui demande ensuite qui est connecté.
 if (USE_PROXY) {
   $('#btnCas').onclick = () => { location.href = 'cas.php'; };
+  // GitHub : vraie connexion OAuth via github.php (plus besoin de jeton)
+  $('#formGithub').hidden = true;
+  $('#providerGithubOauth').hidden = false;
+  $('#btnGithubOauth').onclick = () => { location.href = 'github.php'; };
 } else {
   $('#btnCas').disabled = true;
   $('#providerCas').classList.add('off');
@@ -682,6 +693,20 @@ async function casUser() {
       }
     } else {
       flash('Connexion CAS refusée ou ticket invalide.', 'err');
+    }
+  }
+  if (USE_PROXY && params.has('github')) {
+    history.replaceState(null, '', location.pathname);
+    let g = null;
+    if (params.get('github') === 'ok') {
+      try { g = (await (await fetch('github.php?action=me', { cache: 'no-store' })).json()).user; } catch {}
+    }
+    if (g) {
+      state.session = { provider: 'github', name: g.name, login: g.login, avatar: g.avatar, canWrite: false };
+      try { await startApp(); flash('Connectée avec GitHub (' + g.login + ').'); return; }
+      catch (e) { flash(e.message, 'err'); state.session = null; }
+    } else {
+      flash('Connexion GitHub refusée.', 'err');
     }
   }
   const saved = store.get('artinq_session');
