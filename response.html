@@ -323,11 +323,6 @@ async function loginLocal(mail, ident, key) {
     state.session = null;
     throw new Error('Connexion refusée : Omeka S ne reconnaît pas ce compte. Vérifie ton email et ta clé API (key_identity + key_credential), ou crée une nouvelle clé dans Omeka (ton nom › Modifier › Clés API).');
   }
-  // contrôle de sécurité : si le compte est aussi visible sans clé, on ne peut pas valider la clé
-  if (await findUser(false)) {
-    state.session = null;
-    throw new Error('Impossible de vérifier la clé API sur cet Omeka S (les comptes sont visibles sans clé).');
-  }
   state.session = { provider: 'local', ident, key, name: u['o:name'] || mail, email: mail,
     role: u['o:role'] || '', canWrite: true };
 }
